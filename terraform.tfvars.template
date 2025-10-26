@@ -1,0 +1,69 @@
+# ================================================================
+# TEMPLATE TERRAFORM VARIABLES - AKS Cluster
+# COPIER CE FICHIER VERS terraform.tfvars ET PERSONNALISER
+# ================================================================
+
+# 🚨 ATTENTION: Ce fichier contient des exemples
+# Copiez-le vers terraform.tfvars et modifiez avec vos vraies valeurs
+
+# Configuration de base du cluster
+resource_group_name = "votre-resource-group"     # CHANGER: Nom de votre groupe de ressources
+cluster_name        = "votre-cluster-aks"        # CHANGER: Nom de votre cluster AKS
+location            = "francecentral"             # CHANGER si nécessaire: région Azure
+kubernetes_version  = "1.32.7"                   # Version K8s (vérifier la dernière)
+
+# Configuration des nœuds
+node_count      = 1                              # Nombre de nœuds initial
+vm_size         = "Standard_D2ps_v6"            # Taille des VMs (ajuster selon besoins)
+os_disk_size_gb = 128                           # Taille du disque OS
+
+# Autoscaling
+enable_auto_scaling = false                      # true/false selon vos besoins
+min_node_count      = 1                         # Min nœuds si autoscaling activé
+max_node_count      = 3                         # Max nœuds si autoscaling activé
+
+# Configuration réseau
+network_plugin = "azure"                         # Plugin réseau (azure/kubenet)
+service_cidr   = "10.0.0.0/16"                  # CIDR pour les services K8s
+dns_service_ip = "10.0.0.10"                    # IP du service DNS
+vnet_name      = "votre-vnet"                    # CHANGER: Nom de votre VNet
+subnet_name    = "default"                       # Nom du subnet
+
+# Zones de disponibilité
+availability_zones = ["1", "2", "3"]            # Zones AZ à utiliser
+
+# Configuration des pods
+max_pods_per_node = 110                          # Max pods par nœud
+
+# Fonctionnalités activées
+enable_rbac         = true                       # Activer RBAC
+enable_azure_policy = true                      # Activer Azure Policy
+enable_oms_agent    = true                      # Activer monitoring
+
+# Log Analytics
+log_analytics_workspace_name = "votre-law-workspace"        # CHANGER: Nom workspace
+log_analytics_resource_group = "votre-rg-monitoring"        # CHANGER: RG monitoring
+
+# MongoDB (optionnel)
+mongodb_enabled       = true                    # true/false pour déployer MongoDB
+mongodb_namespace     = "ratingapp"             # Namespace pour MongoDB
+mongodb_release_name  = "ratings"              # Nom release Helm
+mongodb_chart_version = "18.1.1"               # Version chart Bitnami
+
+# Tags personnalisés
+tags = {
+  Environment = "Development"                    # CHANGER: Environment (Dev/Test/Prod)
+  Project     = "VotreProjet"                   # CHANGER: Nom de votre projet
+  ManagedBy   = "Terraform"                     # Laisser tel quel
+  Backup      = "True"                          # true/false selon politique backup
+  Owner       = "VotreNom"                      # CHANGER: Votre nom/équipe
+  Workshop    = "AKS-Demo"                      # CHANGER: Tag spécifique
+}
+
+# 📝 NOTES IMPORTANTES:
+# =====================
+# 1. Copiez ce fichier vers terraform.tfvars
+# 2. Remplacez toutes les valeurs marquées "CHANGER"
+# 3. Ne committez JAMAIS terraform.tfvars dans Git
+# 4. Vérifiez que .gitignore inclut terraform.tfvars
+# 5. Testez avec terraform plan avant terraform apply

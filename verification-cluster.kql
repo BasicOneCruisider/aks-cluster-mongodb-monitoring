@@ -1,0 +1,51 @@
+// REQUÊTE SIMPLE - VÉRIFICATION CLUSTER K8WORKSHOPAKS-RESTORED
+// ==========================================================
+
+// ✅ REQUÊTE PRINCIPALE - Confirmer que le cluster existe et fonctionne
+KubeNodeInventory
+| where ClusterName == "K8workshopaks-restored"
+| where TimeGenerated > ago(24h)
+| summarize 
+    NodesTotal = dcount(Computer),
+    NodesReady = dcountif(Computer, Status == "Ready"),
+    DerniereActivite = max(TimeGenerated),
+    Nodes = make_set(Computer)
+| extend 
+    ClusterStatus = iff(NodesTotal > 0, "✅ CLUSTER EXISTE", "❌ CLUSTER INTROUVABLE"),
+    NodesStatus = iff(NodesReady == NodesTotal, "✅ TOUS NODES READY", strcat("⚠️ ", NodesReady, "/", NodesTotal, " READY")),
+    ActiviteStatus = iff(DerniereActivite > ago(1h), "✅ ACTIF", "⚠️ DONNEES ANCIENNES")
+| project ClusterStatus, NodesStatus, ActiviteStatus, NodesTotal, NodesReady, DerniereActivite, Nodes
+
+// 📊 ALTERNATIVE - Si pas de données dans KubeNodeInventory, chercher dans toutes les tables
+search "K8workshopaks-restored"
+| where TimeGenerated > ago(24h)
+| summarize 
+    TablesAvecDonnees = dcount($table),
+    DerniereActivite = max(TimeGenerated),
+    Tables = make_set($table),
+    TotalRecords = count()
+| extend Status = iff(TotalRecords > 0, "✅ CLUSTER DETECTE", "❌ AUCUNE DONNEE")
+| project Status, TablesAvecDonnees, TotalRecords, DerniereActivite, Tables
+
+// 🗄️ VÉRIFICATION MONGODB - Confirmer que MongoDB fonctionne
+KubePodInventory
+| where ClusterName == "K8workshopaks-restored"
+| where Name contains "mongodb"
+| where TimeGenerated > ago(24h)
+| summarize 
+    PodsTotal = count(),
+    PodsRunning = countif(PodStatus == "Running"),
+    DerniereActivite = max(TimeGenerated),
+    Namespaces = make_set(Namespace)
+| extend 
+    MongoStatus = iff(PodsRunning > 0, "✅ MONGODB RUNNING", iff(PodsTotal > 0, "⚠️ MONGODB PRESENT MAIS PAS RUNNING", "❌ MONGODB NON TROUVE"))
+| project MongoStatus, PodsTotal, PodsRunning, DerniereActivite, Namespaces
+
+// 🚀 VÉRIFICATION RAPIDE - Activité générale du cluster (dernière heure)
+union
+    (KubeNodeInventory | where ClusterName == "K8workshopaks-restored" | where TimeGenerated > ago(1h) | summarize count() | extend Type = "Nodes"),
+    (KubePodInventory | where ClusterName == "K8workshopaks-restored" | where TimeGenerated > ago(1h) | summarize count() | extend Type = "Pods"),
+    (KubeEvents | where ClusterName == "K8workshopaks-restored" | where TimeGenerated > ago(1h) | summarize count() | extend Type = "Events"),
+    (ContainerLogV2 | where * contains "mongodb" | where TimeGenerated > ago(1h) | summarize count() | extend Type = "MongoDB Logs")
+| extend Status = iff(count_ > 0, "✅ ACTIF", "⚠️ INACTIF")
+| project Type, Status, Records = count_

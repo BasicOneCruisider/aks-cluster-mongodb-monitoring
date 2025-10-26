@@ -1,0 +1,219 @@
+# ================================================================
+# SAUVEGARDE CLUSTER AKS - Configuration YAML Kubernetes
+# Cluster: K8workshopaks
+# Resource Group: Terible
+# Date: 26 octobre 2025
+# ================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aks-cluster-backup-config
+  namespace: kube-system
+  labels:
+    app: cluster-backup
+    cluster: K8workshopaks
+data:
+  cluster-name: "K8workshopaks"
+  resource-group: "Terible"
+  location: "francecentral"
+  kubernetes-version: "1.32.7"
+  node-resource-group: "MC_Terible_K8workshopaks_westeurope"
+
+---
+# Configuration des Agent Pools
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aks-agentpool-config
+  namespace: kube-system
+  labels:
+    app: cluster-backup
+    component: agentpool
+data:
+  agentpool.yaml: |
+    name: agentpool
+    count: 1
+    vmSize: Standard_D2ps_v6
+    osDiskSizeGB: 128
+    osDiskType: Managed
+    osType: Linux
+    osSKU: Ubuntu
+    mode: System
+    maxPods: 110
+    enableAutoScaling: false
+    availabilityZones: ["1", "2", "3"]
+    nodeImageVersion: AKSUbuntu-2204gen2arm64containerd-202510.03.0
+    kubeletDiskType: OS
+    upgradeSettings:
+      maxSurge: "10%"
+      maxUnavailable: "0"
+    securityProfile:
+      enableSecureBoot: false
+      enableVTpm: false
+
+---
+# Configuration réseau
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aks-network-config
+  namespace: kube-system
+  labels:
+    app: cluster-backup
+    component: network
+data:
+  network.yaml: |
+    networkPlugin: azure
+    networkDataplane: azure
+    networkPolicy: none
+    serviceCIDR: 10.0.0.0/16
+    dnsServiceIP: 10.0.0.10
+    loadBalancerSKU: Standard
+    outboundType: loadBalancer
+    ipFamilies: ["IPv4"]
+    loadBalancerProfile:
+      managedOutboundIPs:
+        count: 1
+      backendPoolType: nodeIPConfiguration
+
+---
+# Configuration des addons
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aks-addons-config
+  namespace: kube-system
+  labels:
+    app: cluster-backup
+    component: addons
+data:
+  addons.yaml: |
+    azurepolicy:
+      enabled: true
+    omsAgent:
+      enabled: true
+      config:
+        logAnalyticsWorkspaceResourceID: "/subscriptions/a56f5503-7af4-45e6-8f96-dd6c75a8883d/resourceGroups/rg-secops-poc-francecentral/providers/Microsoft.OperationalInsights/workspaces/law-secops-poc-francecentral"
+        useAADAuth: "true"
+    azureKeyvaultSecretsProvider:
+      enabled: false
+
+---
+# Configuration de sécurité
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aks-security-config
+  namespace: kube-system
+  labels:
+    app: cluster-backup
+    component: security
+data:
+  security.yaml: |
+    enableRBAC: true
+    disableLocalAccounts: false
+    oidcIssuerProfile:
+      enabled: true
+    workloadIdentity:
+      enabled: true
+    imageCleaner:
+      enabled: true
+      intervalHours: 168
+
+---
+# Configuration des applications déployées
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aks-applications-config
+  namespace: kube-system
+  labels:
+    app: cluster-backup
+    component: applications
+data:
+  applications.yaml: |
+    helmReleases:
+      - name: ratings
+        namespace: ratingapp
+        chart: mongodb
+        version: "18.1.1"
+        repository: https://charts.bitnami.com/bitnami
+        values:
+          architecture: standalone
+          auth:
+            enabled: true
+            rootUser: root
+          service:
+            type: ClusterIP
+            ports:
+              mongodb: 27017
+
+    namespaces:
+      - name: ratingapp
+        labels:
+          name: ratingapp
+
+    secrets:
+      - name: mongosecret
+        namespace: ratingapp
+        type: Opaque
+        data:
+          MONGOCONNECTION: "mongodb://Faris:Faris-2024@ratings-mongodb.ratingapp:27017/ratingapp"
+
+---
+# Instructions de restauration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aks-restore-instructions
+  namespace: kube-system
+  labels:
+    app: cluster-backup
+    component: documentation
+data:
+  restore-instructions.md: |
+    # Instructions de restauration du cluster AKS
+
+    ## 1. Créer le cluster AKS
+    ```bash
+    az aks create \
+      --resource-group Terible \
+      --name K8workshopaks \
+      --location francecentral \
+      --kubernetes-version 1.32.7 \
+      --node-count 1 \
+      --node-vm-size Standard_D2ps_v6 \
+      --node-osdisk-size 128 \
+      --network-plugin azure \
+      --service-cidr 10.0.0.0/16 \
+      --dns-service-ip 10.0.0.10 \
+      --enable-rbac \
+      --enable-oidc-issuer \
+      --enable-workload-identity \
+      --enable-image-cleaner \
+      --zones 1 2 3
+    ```
+
+    ## 2. Configurer kubectl
+    ```bash
+    az aks get-credentials --resource-group Terible --name K8workshopaks
+    ```
+
+    ## 3. Restaurer les applications
+    ```bash
+    # Créer le namespace
+    kubectl create namespace ratingapp
+
+    # Ajouter le repository Helm
+    helm repo add bitnami https://charts.bitnami.com/bitnami
+    helm repo update
+
+    # Installer MongoDB
+    helm install ratings bitnami/mongodb --namespace ratingapp
+
+    # Créer le secret personnalisé
+    kubectl create secret generic mongosecret \
+      --namespace ratingapp \
+      --from-literal=MONGOCONNECTION="mongodb://Faris:Faris-2024@ratings-mongodb.ratingapp:27017/ratingapp"
+    ```

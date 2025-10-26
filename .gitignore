@@ -1,0 +1,261 @@
+# ==========================================
+# GITIGNORE POUR PROJET AKS/TERRAFORM/KUBERNETES
+# ==========================================
+
+# 🔐 FICHIERS SENSIBLES - SECRETS ET CREDENTIALS
+# ===============================================
+
+# Fichiers de credentials Azure
+*.azure/
+.azure/
+azure.json
+azure-credentials.json
+service-principal.json
+
+# Fichiers de configuration kubectl avec tokens
+.kube/config
+kubeconfig*
+*kubeconfig*
+*.kubeconfig
+
+# Fichiers Terraform sensibles
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars.backup
+*.auto.tfvars
+*secret*.tfvars
+*password*.tfvars
+*credential*.tfvars
+
+# Variables d'environnement avec secrets
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+secrets.env
+
+# Certificats et clés
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+ssl/
+certs/
+certificates/
+
+# Fichiers de mots de passe
+passwords.txt
+secrets.txt
+*password*
+*secret*
+*credential*
+
+# 🐛 FICHIERS TEMPORAIRES ET LOGS
+# ================================
+
+# Logs de déploiement
+*.log
+logs/
+deploy.log
+install.log
+terraform.log
+kubectl.log
+helm.log
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Dossiers de cache
+.cache/
+tmp/
+temp/
+
+# 🏗️ FICHIERS DE BUILD ET DEPENDANCES
+# ===================================
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# .NET
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.user
+*.suo
+*.cache
+*.docstates
+[Bb]in/
+[Oo]bj/
+
+# Helm
+charts/*.tgz
+.helm/
+
+# 📊 FICHIERS DE MONITORING ET BACKUP
+# ===================================
+
+# Dumps et exports de base de données
+*.sql
+*.dump
+*.backup
+mongo-dump/
+backups/
+
+# Fichiers de monitoring temporaires
+monitoring-*.json
+metrics-*.json
+logs-export/
+
+# 🛠️ FICHIERS SPECIFIQUES A L'IDE
+# ===============================
+
+# Visual Studio Code
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.vscode/c_cpp_properties.json
+
+# Visual Studio
+*.suo
+*.user
+*.sln.docstates
+.vs/
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# 🚀 FICHIERS DE DEPLOIEMENT LOCAUX
+# =================================
+
+# Scripts de déploiement avec credentials
+deploy-prod.sh
+deploy-staging.sh
+*deploy*secret*
+*deploy*password*
+
+# Fichiers de configuration locaux
+local-config.yaml
+local-settings.json
+*local*secret*
+
+# 📋 FICHIERS SPECIFIQUES AU PROJET
+# =================================
+
+# Fichiers Kubernetes avec secrets inline
+*secret*.yaml
+*secret*.yml
+secrets/
+k8s-secrets/
+
+# Terraform avec IDs réels (garder les templates)
+terraform.tfvars
+# Mais permettre les exemples
+!terraform.tfvars.example
+!terraform.tfvars.template
+
+# Fichiers de configuration avec IDs réels
+cluster-config.json
+# Mais permettre les templates
+!cluster-config.template.json
+
+# Scripts avec credentials hardcodés
+*-with-secrets.*
+*-prod.*
+*-production.*
+
+# ✅ FICHIERS A GARDER DANS GIT (EXCEPTIONS)
+# ==========================================
+
+# Templates et exemples (sans secrets)
+!*.template
+!*.example
+!*-template.*
+!*-example.*
+
+# Documentation
+!README.md
+!DEPLOYMENT.md
+!TROUBLESHOOTING.md
+
+# Fichiers de configuration sans secrets
+!*.tf
+!*.hcl
+!values.yaml
+!Chart.yaml
+!requirements.yaml
+
+# Scripts sans credentials
+!monitoring-simple.ps1
+!verification-cluster.ps1
+!deploy.sh
+!install.sh
+
+# Requêtes et monitoring
+!*.kql
+!*.sql
+!grafana-dashboard.json
+
+# 🔄 FICHIERS TEMPORAIRES SPECIFIQUES
+# ===================================
+
+# Fichiers de travail temporaires
+work/
+scratch/
+testing/
+debug/
+
+# Snapshots et dumps temporaires
+snapshot*/
+dump*/
+export*/
+
+# Fichiers de test avec données sensibles
+test-data-real/
+prod-data/
+staging-data/
+
+# ⚠️ ATTENTION: VERIFICATION MANUELLE REQUISE
+# ===========================================
+# Avant de committer, vérifiez toujours que vous n'exposez pas:
+# - IDs de subscription Azure
+# - Noms de clusters réels
+# - IPs publiques
+# - Noms de ressources en production
+# - Tokens d'accès
+# - Mots de passe
+# - Certificats
+
+# 📝 COMMANDES UTILES POUR NETTOYER:
+# ==================================
+# Supprimer les fichiers déjà trackés par erreur:
+# git rm --cached <file>
+# git rm -r --cached <directory>
+#
+# Vérifier ce qui va être commité:
+# git status
+# git diff --cached
+#
+# Scanner les secrets avant commit:
+# git secrets --scan

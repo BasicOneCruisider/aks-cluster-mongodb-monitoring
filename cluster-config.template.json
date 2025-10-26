@@ -1,0 +1,116 @@
+{
+  "aadProfile": null,
+  "addonProfiles": {
+    "azureKeyvaultSecretsProvider": {
+      "config": null,
+      "enabled": false,
+      "identity": null
+    },
+    "azurepolicy": {
+      "config": null,
+      "enabled": true,
+      "identity": {
+        "clientId": "XXXX-XXXX-XXXX-XXXX",
+        "objectId": "XXXX-XXXX-XXXX-XXXX",
+        "resourceId": "/subscriptions/YOUR-SUBSCRIPTION-ID/resourcegroups/MC_YOUR-RG_YOUR-CLUSTER_YOUR-REGION/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azurepolicy-YOUR-CLUSTER"
+      }
+    },
+    "omsAgent": {
+      "config": {
+        "logAnalyticsWorkspaceResourceID": "/subscriptions/YOUR-SUBSCRIPTION-ID/resourceGroups/YOUR-MONITORING-RG/providers/Microsoft.OperationalInsights/workspaces/YOUR-LAW-WORKSPACE",
+        "useAADAuth": "true"
+      },
+      "enabled": true,
+      "identity": null
+    }
+  },
+  "agentPoolProfiles": [
+    {
+      "availabilityZones": ["1", "2", "3"],
+      "count": 1,
+      "enableAutoScaling": false,
+      "maxPods": 110,
+      "mode": "System",
+      "name": "agentpool",
+      "osDiskSizeGb": 128,
+      "osDiskType": "Managed",
+      "osSku": "Ubuntu",
+      "osType": "Linux",
+      "vmSize": "Standard_D2ps_v6",
+      "vnetSubnetId": "/subscriptions/YOUR-SUBSCRIPTION-ID/resourceGroups/YOUR-NETWORK-RG/providers/Microsoft.Network/virtualNetworks/YOUR-VNET/subnets/YOUR-SUBNET"
+    }
+  ],
+  "autoUpgradeProfile": {
+    "nodeOsUpgradeChannel": "NodeImage",
+    "upgradeChannel": "patch"
+  },
+  "azureMonitorProfile": {
+    "metrics": {
+      "enabled": true,
+      "kubeStateMetrics": {
+        "metricAnnotationsAllowList": "",
+        "metricLabelsAllowlist": ""
+      }
+    }
+  },
+  "azurePortalFqdn": "YOUR-CLUSTER-dns-XXXXX.portal.hcp.YOUR-REGION.azmk8s.io",
+  "currentKubernetesVersion": "1.32.7",
+  "disableLocalAccounts": false,
+  "dnsPrefix": "YOUR-CLUSTER-dns",
+  "enableRbac": true,
+  "fqdn": "YOUR-CLUSTER-dns-XXXXX.hcp.YOUR-REGION.azmk8s.io",
+  "id": "/subscriptions/YOUR-SUBSCRIPTION-ID/resourcegroups/YOUR-RG/providers/Microsoft.ContainerService/managedClusters/YOUR-CLUSTER",
+  "identity": {
+    "principalId": "XXXX-XXXX-XXXX-XXXX",
+    "tenantId": "YOUR-TENANT-ID",
+    "type": "SystemAssigned"
+  },
+  "identityProfile": {
+    "kubeletidentity": {
+      "clientId": "XXXX-XXXX-XXXX-XXXX",
+      "objectId": "XXXX-XXXX-XXXX-XXXX",
+      "resourceId": "/subscriptions/YOUR-SUBSCRIPTION-ID/resourcegroups/MC_YOUR-RG_YOUR-CLUSTER_YOUR-REGION/providers/Microsoft.ManagedIdentity/userAssignedIdentities/YOUR-CLUSTER-agentpool"
+    }
+  },
+  "kubernetesVersion": "1.32.7",
+  "location": "YOUR-REGION",
+  "name": "YOUR-CLUSTER",
+  "networkProfile": {
+    "dnsServiceIp": "10.0.0.10",
+    "loadBalancerSku": "Standard",
+    "networkPlugin": "azure",
+    "serviceCidr": "10.0.0.0/16"
+  },
+  "nodeResourceGroup": "MC_YOUR-RG_YOUR-CLUSTER_YOUR-REGION",
+  "oidcIssuerProfile": {
+    "enabled": true,
+    "issuerUrl": "https://YOUR-REGION.oic.prod-aks.azure.com/YOUR-TENANT-ID/YOUR-ISSUER-ID/"
+  },
+  "provisioningState": "Succeeded",
+  "resourceGroup": "YOUR-RG",
+  "securityProfile": {
+    "imageCleaner": {
+      "enabled": true,
+      "intervalHours": 168
+    },
+    "workloadIdentity": {
+      "enabled": true
+    }
+  },
+  "sku": {
+    "name": "Base",
+    "tier": "Free"
+  },
+  "storageProfile": {
+    "diskCsiDriver": {
+      "enabled": true
+    },
+    "fileCsiDriver": {
+      "enabled": true
+    },
+    "snapshotController": {
+      "enabled": true
+    }
+  },
+  "type": "Microsoft.ContainerService/ManagedClusters"
+}

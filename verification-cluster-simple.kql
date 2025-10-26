@@ -1,0 +1,50 @@
+// REQUÊTE PRINCIPALE - VÉRIFICATION CLUSTER K8WORKSHOPAKS-RESTORED
+// ===============================================================
+
+// ✅ REQUÊTE SIMPLE ET FONCTIONNELLE
+KubeNodeInventory
+| where ClusterName == "K8workshopaks-restored"
+| where TimeGenerated > ago(24h)
+| summarize 
+    NodesTotal = dcount(Computer),
+    NodesReady = dcountif(Computer, Status == "Ready"),
+    DerniereActivite = max(TimeGenerated),
+    Nodes = make_set(Computer)
+| extend 
+    ClusterStatus = iff(NodesTotal > 0, "CLUSTER EXISTE", "CLUSTER INTROUVABLE"),
+    NodesStatus = iff(NodesReady == NodesTotal, "TOUS NODES READY", strcat(NodesReady, "/", NodesTotal, " READY")),
+    ActiviteStatus = iff(DerniereActivite > ago(1h), "ACTIF", "DONNEES ANCIENNES")
+
+// ===============================================================
+
+// 🔍 ALTERNATIVE SI PAS DE DONNÉES DANS KubeNodeInventory
+search "K8workshopaks-restored"
+| where TimeGenerated > ago(24h)
+| summarize 
+    TablesAvecDonnees = dcount($table),
+    DerniereActivite = max(TimeGenerated),
+    Tables = make_set($table),
+    TotalRecords = count()
+| extend Status = iff(TotalRecords > 0, "CLUSTER DETECTE", "AUCUNE DONNEE")
+
+// ===============================================================
+
+// 📊 VÉRIFICATION PODS MONGODB
+KubePodInventory
+| where ClusterName == "K8workshopaks-restored"
+| where Name contains "mongodb"
+| where TimeGenerated > ago(24h)
+| summarize 
+    PodsTotal = count(),
+    PodsRunning = countif(PodStatus == "Running"),
+    DerniereActivite = max(TimeGenerated)
+| extend MongoStatus = iff(PodsRunning > 0, "MONGODB RUNNING", "MONGODB NON RUNNING")
+
+// ===============================================================
+
+// 🚀 VÉRIFICATION ACTIVITÉ (dernière heure)
+union
+    (KubeNodeInventory | where ClusterName == "K8workshopaks-restored" | where TimeGenerated > ago(1h) | summarize count() | extend Type = "Nodes"),
+    (KubePodInventory | where ClusterName == "K8workshopaks-restored" | where TimeGenerated > ago(1h) | summarize count() | extend Type = "Pods"),
+    (KubeEvents | where ClusterName == "K8workshopaks-restored" | where TimeGenerated > ago(1h) | summarize count() | extend Type = "Events")
+| extend Status = iff(count_ > 0, "ACTIF", "INACTIF")
